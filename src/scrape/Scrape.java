@@ -5,6 +5,8 @@
  */
 package scrape;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +16,8 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
@@ -29,6 +33,7 @@ public class Scrape {
     static HashMap<String, HashSet<String>> dict = new HashMap<>();
     static UrlValidator urlVal = new UrlValidator();
     static String baseUrl = "http://www.gocardless.com";
+    static JsonArray json = new JsonArray();
 
     /**
      * @param args the command line arguments
@@ -39,69 +44,69 @@ public class Scrape {
         //get url
         //Scanner scan = new Scanner(System.in);
         //baseUrl = scan.nextLine()
-
         newUrls.add(baseUrl);
         try {
             request(baseUrl);
-        } catch (IOException ex) {
-            Logger.getLogger(Scrape.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | JSONException ex) {
+            System.out.println(ex);
         }
-        System.out.println(dict);
+
+        System.out.println(json);
+    }
+
+    static void request(String url) throws IOException, JSONException {
+
+        HashSet<String> assets = new HashSet<>();
+
+        //get html
+        Document body = Jsoup.connect(url).get();
+        scrapedUrls.add(url);
+
+        if (newUrls.contains(url)) {
+            newUrls.remove(url);
+        }
+
+        //get links, media and css && js imports from html
+        Elements links = body.select("a[href]");
+        Elements media = body.select("[src]");
+        Elements imports = body.select("link[href]");
+
+        for (Element el : links) {
+            String link = el.attr("abs:href");
+            if (urlVal.isValid(link) && checkSubOrCrossDomain(baseUrl, link) && !scrapedUrls.contains(link)) {
+                newUrls.add(link);
+            }
+        }
+
+        for (Element asset : media) {
+            if (urlVal.isValid(asset.attr("abs:src"))) {
+                assets.add(asset.attr("abs:src"));
+            }
+        }
+
+        for (Element asset : imports) {
+            if (urlVal.isValid(asset.attr("abs:href"))) {
+                assets.add(asset.attr("abs:href"));
+            }
+        }
+
+         JsonObject obj = new JsonObject();
+         obj.addProperty("assets", assets.toString());
+         
+         json.add(obj);
+
+        if (!newUrls.isEmpty()) {
+            request(newUrls.iterator().next());
+        }
 
     }
-   
 
-    static void request(String url) throws IOException {
+    static boolean checkSubOrCrossDomain(String bUrl, String url) throws MalformedURLException {
 
-            HashSet<String> assets = new HashSet<>();
+        URL baseHost = new URL(bUrl);
+        URL urlHost = new URL(url);
 
-            //get html
-            Document body = Jsoup.connect(url).get();
-            scrapedUrls.add(url);
-            
-            if (newUrls.contains(url)){
-                newUrls.remove(url);
-            }
-
-            //get links, media and css && js imports from html
-            Elements links = body.select("a[href]");
-            Elements media = body.select("[src]");
-            Elements imports = body.select("link[href]");
-
-            for (Element el : links) {
-                String link = el.attr("abs:href");
-                if (urlVal.isValid(link) && checkSubOrCrossDomain(baseUrl, link) && !scrapedUrls.contains(link)) {
-                    newUrls.add(link);
-                }
-            }
-
-            for (Element asset : media) {
-                if (urlVal.isValid(asset.attr("abs:src"))) {
-                    assets.add(asset.attr("abs:src"));
-                }
-            }
-
-            for (Element asset : imports) {
-                if (urlVal.isValid(asset.attr("abs:href"))) {
-                    assets.add(asset.attr("abs:href"));
-                }
-            }
-
-            dict.put(url, assets);
-            
-            if (!newUrls.isEmpty()) {
-                request(newUrls.iterator().next());
-            }
-
-
-    }
-    
-     static boolean checkSubOrCrossDomain(String bUrl, String url) throws MalformedURLException {
-
-        URL baseUrl = new URL(bUrl);
-        URL testUrl = new URL(url);
-
-        return testUrl.getHost().equals(baseUrl.getHost());
+        return baseHost.getHost().equals(urlHost.getHost());
     }
 
 }
