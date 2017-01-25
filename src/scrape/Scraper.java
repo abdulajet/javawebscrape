@@ -9,58 +9,37 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Scanner;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.*;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 /**
  *
  * @author abdulhakim
  */
-public class Scrape {
+public class Scraper {
 
-    static HashSet<String> newUrls = new HashSet<>();
-    static HashSet<String> scrapedUrls = new HashSet<>();
-    static UrlValidator urlVal = new UrlValidator();
-    static String baseUrl = "";
-    static JSONArray json = new JSONArray();
+    private HashSet<String> newUrls;
+    private HashSet<String> scrapedUrls;
+    private JSONArray json;
+    private UrlValidator urlVal;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-
-        //get url
-        while (true) {
-            Scanner scan = new Scanner(System.in);
-            baseUrl = scan.nextLine();
-
-            if (urlVal.isValid(baseUrl)) {
-                break;
-            }else{
-                System.out.println("Please enter a valid url including the protocol (e.g. http://example.org)");
-            }
-        }
-
-        newUrls.add(baseUrl);
-        try {
-            request(baseUrl);
-        } catch (IOException | JSONException ex) {
-            System.out.println(ex);
-        }
-
-        System.out.println(json);
+    public Scraper() {
+        newUrls = new HashSet<>();
+        scrapedUrls = new HashSet<>();
+        json = new JSONArray();
+        urlVal = new UrlValidator();
     }
 
-    static void request(String url) throws IOException, JSONException {
+    public JSONArray request(String url, String baseUrl) throws IOException, JSONException {
 
         HashSet<String> assets = new HashSet<>();
+        
 
         //get html
         Document body = Jsoup.connect(url).get();
@@ -101,17 +80,22 @@ public class Scrape {
         json.put(obj);
 
         if (!newUrls.isEmpty()) {
-            request(newUrls.iterator().next());
+            request(newUrls.iterator().next(), baseUrl);
         }
+        
+        return this.json;
 
     }
 
-    static boolean checkSubOrCrossDomain(String bUrl, String url) throws MalformedURLException {
+    public boolean checkSubOrCrossDomain(String bUrl, String url) throws MalformedURLException {
 
         URL baseHost = new URL(bUrl);
         URL urlHost = new URL(url);
 
         return baseHost.getHost().equals(urlHost.getHost());
     }
-
+    
+    public boolean isValid(String url){
+        return urlVal.isValid(url);
+    }
 }

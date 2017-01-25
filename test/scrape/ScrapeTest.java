@@ -59,9 +59,9 @@ public class ScrapeTest {
     @Test
     public void testCheckSubOrCrossDomain() throws Exception {
         System.out.println("checkSubOrCrossDomain");
-        boolean subdomain = Scrape.checkSubOrCrossDomain("http://google.com", "http://mail.google.com");
-        boolean crossDomain = Scrape.checkSubOrCrossDomain("http://google.com", "http://youtube.com");
-        boolean sameDomain = Scrape.checkSubOrCrossDomain("http://google.com", "http://google.com/hello");
+        boolean subdomain = Main.checkSubOrCrossDomain("http://google.com", "http://mail.google.com");
+        boolean crossDomain = Main.checkSubOrCrossDomain("http://google.com", "http://youtube.com");
+        boolean sameDomain = Main.checkSubOrCrossDomain("http://google.com", "http://google.com/hello");
 
         assertEquals(false, subdomain);
         assertEquals(false, crossDomain);
