@@ -5,17 +5,13 @@
  */
 package scrape;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -30,10 +26,9 @@ public class Scrape {
 
     static HashSet<String> newUrls = new HashSet<>();
     static HashSet<String> scrapedUrls = new HashSet<>();
-    static HashMap<String, HashSet<String>> dict = new HashMap<>();
     static UrlValidator urlVal = new UrlValidator();
-    static String baseUrl = "http://www.gocardless.com";
-    static JsonArray json = new JsonArray();
+    static String baseUrl = "";
+    static JSONArray json = new JSONArray();
 
     /**
      * @param args the command line arguments
@@ -42,8 +37,17 @@ public class Scrape {
         // TODO code application logic here
 
         //get url
-        //Scanner scan = new Scanner(System.in);
-        //baseUrl = scan.nextLine()
+        while (true) {
+            Scanner scan = new Scanner(System.in);
+            baseUrl = scan.nextLine();
+
+            if (urlVal.isValid(baseUrl)) {
+                break;
+            }else{
+                System.out.println("Please enter a valid url including the protocol (e.g. http://example.org)");
+            }
+        }
+
         newUrls.add(baseUrl);
         try {
             request(baseUrl);
@@ -90,10 +94,11 @@ public class Scrape {
             }
         }
 
-         JsonObject obj = new JsonObject();
-         obj.addProperty("assets", assets.toString());
-         
-         json.add(obj);
+        JSONObject obj = new JSONObject();
+        obj.put("url", url);
+        obj.put("assets", assets);
+
+        json.put(obj);
 
         if (!newUrls.isEmpty()) {
             request(newUrls.iterator().next());
