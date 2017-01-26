@@ -44,7 +44,8 @@ public class Scraper {
         //get html
         Document body = Jsoup.connect(url).get();
         scrapedUrls.add(url);
-
+        
+        //removes the new url from the set because it has been scraped
         if (newUrls.contains(url)) {
             newUrls.remove(url);
         }
@@ -72,13 +73,15 @@ public class Scraper {
                 assets.add(asset.attr("abs:href"));
             }
         }
-
+        
+        //make the json object
         JSONObject obj = new JSONObject();
         obj.put("url", url);
         obj.put("assets", assets);
 
         json.put(obj);
-
+        
+        //recursively call the function with the next url in the new url set
         if (!newUrls.isEmpty()) {
             request(newUrls.iterator().next(), baseUrl);
         }
@@ -88,7 +91,7 @@ public class Scraper {
     }
 
     public boolean checkSubOrCrossDomain(String bUrl, String url) throws MalformedURLException {
-
+        
         URL baseHost = new URL(bUrl);
         URL urlHost = new URL(url);
 

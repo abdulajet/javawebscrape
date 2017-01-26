@@ -19,10 +19,12 @@ public class Main {
 
     public static void main(String[] args) {
         Scraper s = new Scraper();
+        Scanner scan = new Scanner(System.in);
         String baseUrl = "";
-        //get url
+        
+        //get a valid url
         while (true) {
-            Scanner scan = new Scanner(System.in);
+     
             baseUrl = scan.nextLine();
 
             if (s.isValid(baseUrl)) {
@@ -35,9 +37,9 @@ public class Main {
         try {
             System.out.println(s.request(baseUrl, baseUrl));
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (JSONException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

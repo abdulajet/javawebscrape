@@ -6,7 +6,6 @@
 package scrape;
 
 import java.io.IOException;
-import org.json.JSONArray;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
